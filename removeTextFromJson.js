@@ -1,36 +1,11 @@
 const fs = require('fs');
 const path = require('path');
-const readline = require('readline');
 
-const outputDir = './output';
+const outputDir = './output'; // Directory containing JSON files
+
 const textsToRemove = ["GiftCardOrderDetailsForm"];
 
-async function processFile(filePath) {
-    const tempFilePath = filePath + '.tmp';
-
-    const inputStream = fs.createReadStream(filePath);
-    const outputStream = fs.createWriteStream(tempFilePath);
-    const rl = readline.createInterface({ input: inputStream, output: outputStream, terminal: false });
-
-    for await (const line of rl) {
-        let newLine = line;
-        textsToRemove.forEach(text => {
-            newLine = newLine.replace(new RegExp(`"${text}",?`, 'g'), '');
-        });
-        outputStream.write(newLine + '\n');
-    }
-
-    outputStream.end();
-
-    outputStream.on('finish', () => {
-        fs.rename(tempFilePath, filePath, (err) => {
-            if (err) console.error('Error replacing file:', filePath, err);
-            else console.log('Updated file:', filePath);
-        });
-    });
-}
-
-// Process all JSON files in output directory
+// Function to process all files in the output folder
 fs.readdir(outputDir, (err, files) => {
     if (err) {
         console.error('Error reading output directory:', err);
@@ -39,8 +14,39 @@ fs.readdir(outputDir, (err, files) => {
 
     files.forEach(file => {
         const filePath = path.join(outputDir, file);
+
+        // Process only .json files
         if (path.extname(file) === '.json') {
-            processFile(filePath);
+            fs.readFile(filePath, 'utf8', (err, data) => {
+                if (err) {
+                    console.error('Error reading file:', file, err);
+                    return;
+                }
+
+                try {
+                    let jsonData = JSON.parse(data); // Parse JSON
+
+                    // Convert JSON to a string for search & replace
+                    let jsonString = JSON.stringify(jsonData, null, 2);
+
+                    // Replace all occurrences of textsToRemove
+                    textsToRemove.forEach(text => {
+                        jsonString = jsonString.replace(new RegExp(`"${text}",?`, 'g'), '');
+                    });
+
+                    // Rewrite the modified JSON back to the same file
+                    fs.writeFile(filePath, jsonString, 'utf8', err => {
+                        if (err) {
+                            console.error('Error writing file:', file, err);
+                        } else {
+                            console.log(`Updated file saved: ${filePath}`);
+                        }
+                    });
+
+                } catch (error) {
+                    console.error(`Invalid JSON in file: ${file}`, error);
+                }
+            });
         }
     });
 });
