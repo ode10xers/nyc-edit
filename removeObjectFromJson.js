@@ -3,7 +3,7 @@ const path = require("path");
 
 const outputDir = "./output"; // Folder containing JSON files to modify
 const keyToRemove =
-  "/home/afdaall27/Documents/10xers/standalone-salon-fe/src/pages/Settings/SettingsLayout/index.jsx";
+  "/home/afdaall27/Documents/10xers/standalone-salon-fe/src/pages/Settings/SettingsSideNavigation/index.jsx";
 
 // Read all files in the output directory
 fs.readdir(outputDir, (err, files) => {
