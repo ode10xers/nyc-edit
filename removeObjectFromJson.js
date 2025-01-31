@@ -30,21 +30,22 @@ fs.readdir(outputDir, (err, files) => {
           if (jsonData.hasOwnProperty(keyToRemove)) {
             delete jsonData[keyToRemove];
             console.log(`Removed key from ${file}`);
+            
+            // Rewrite the modified JSON back to the same file
+            fs.writeFile(
+              filePath,
+              JSON.stringify(jsonData, null, 2),
+              "utf8",
+              (err) => {
+                if (err) {
+                  console.error("Error writing file:", file, err);
+                } else {
+                  console.log(`Updated file rewritten: ${filePath}`);
+                }
+              }
+            );
           }
 
-          // Rewrite the modified JSON back to the same file
-          fs.writeFile(
-            filePath,
-            JSON.stringify(jsonData, null, 2),
-            "utf8",
-            (err) => {
-              if (err) {
-                console.error("Error writing file:", file, err);
-              } else {
-                console.log(`Updated file rewritten: ${filePath}`);
-              }
-            }
-          );
         } catch (error) {
           console.error(`Invalid JSON in file: ${file}`, error);
         }
